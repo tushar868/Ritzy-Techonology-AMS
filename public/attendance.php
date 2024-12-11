@@ -38,25 +38,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     foreach ($_POST['attendance'] as $employee_id => $data) {
         $status = $data['status'];
-        $check_in = $data['check_in'];
-        $check_out = $data['check_out'];
 
-        // Insert or update attendance record
-        $query = "INSERT INTO attendance (employee_id, date, check_in, check_out, status)
-                  VALUES (:employee_id, :date, :check_in, :check_out, :status)
-                  ON DUPLICATE KEY UPDATE check_in = :check_in, check_out = :check_out, status = :status";
+        // Set check_in and check_out to null for Leave or WFH
+        $check_in = ($status === 'Leave' || $status === 'WFH') ? null : $data['check_in'];
+        $check_out = ($status === 'Leave' || $status === 'WFH') ? null : $data['check_out'];
 
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':employee_id', $employee_id);
-        $stmt->bindParam(':date', $date);
-        $stmt->bindParam(':check_in', $check_in);
-        $stmt->bindParam(':check_out', $check_out);
-        $stmt->bindParam(':status', $status);
-        $stmt->execute();
+        // Ensure data is entered only once per employee
+        $existingQuery = "SELECT COUNT(*) FROM attendance WHERE employee_id = :employee_id AND date = :date";
+        $existingStmt = $conn->prepare($existingQuery);
+        $existingStmt->bindParam(':employee_id', $employee_id);
+        $existingStmt->bindParam(':date', $date);
+        $existingStmt->execute();
+        $alreadyExists = $existingStmt->fetchColumn() > 0;
+
+        if (!$alreadyExists) {
+            // Insert or update attendance record
+            $query = "INSERT INTO attendance (employee_id, date, check_in, check_out, status)
+                      VALUES (:employee_id, :date, :check_in, :check_out, :status)
+                      ON DUPLICATE KEY UPDATE check_in = :check_in, check_out = :check_out, status = :status";
+
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':employee_id', $employee_id);
+            $stmt->bindParam(':date', $date);
+            $stmt->bindParam(':check_in', $check_in);
+            $stmt->bindParam(':check_out', $check_out);
+            $stmt->bindParam(':status', $status);
+            $stmt->execute();
+        }
     }
+
     header('Location: attendance.php?success=Attendance saved successfully!');
     exit();
 }
+
 ?>
 
 
@@ -180,6 +194,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('select[name^="attendance"]').forEach(function (select) {
+        select.addEventListener('change', function () {
+            const row = this.closest('tr');
+            const status = this.value;
+
+            // Clear check-in and check-out fields for "Leave" or "WFH"
+            if (status === 'Leave' || status === 'WFH') {
+                row.querySelector('input[type="time"][name*="[check_in]"]').value = '';
+                row.querySelector('input[type="time"][name*="[check_out]"]').value = '';
+            }
+        });
+    });
+});
+
+</script>
+
 </body>
 </html>
 
