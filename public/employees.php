@@ -98,7 +98,12 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="d-flex flex-wrap justify-content-center gap-1">
                                 <a href="edit_employee.php?id=<?= $employee['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
                                 <a href="delete_employee.php?id=<?= $employee['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this employee?');">Delete</a>
-                                <a href="generate_report.php?id=<?= $employee['id']; ?>" class="btn btn-success btn-sm">Report</a>
+                                <form action="generate_report.php" method="get">
+                                    <label for="month_year_<?php echo $employee['id']; ?>"></label>
+                                    <input type="month" id="month_year_<?php echo $employee['id']; ?>" name="month_year" required>
+                                    <input type="hidden" name="id" value="<?php echo $employee['id']; ?>"> <!-- Employee ID -->
+                                    <button class="btn btn-success btn-sm" type="submit">Generate Report</button>
+                                </form>                                           
                             </div>
                         </td>
                     </tr>
