@@ -41,17 +41,31 @@ if (isset($_GET['id']) && is_numeric($_GET['id']) && isset($_GET['month_year']))
         // Calculate total days in the selected month
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
-        // Calculate weekends
+        // Calculate weekends for saturday and sunday
+        // $weekends = 0;
+        // $weekendDays = [];
+        // for ($day = 1; $day <= $daysInMonth; $day++) {
+        //     $date = strtotime("$year-$month-$day");
+        //     $dayOfWeek = date('N', $date); 
+        //     if ($dayOfWeek == 6 || $dayOfWeek == 7) { 
+        //         $weekends++;
+        //         $weekendDays[] = date('Y-m-d', $date);
+    }
+}
+
+
+        // Calculate weekends (only Sunday)
         $weekends = 0;
         $weekendDays = [];
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $date = strtotime("$year-$month-$day");
             $dayOfWeek = date('N', $date); // Get the day of the week (1 = Monday, 7 = Sunday)
-            if ($dayOfWeek == 6 || $dayOfWeek == 7) {
+            if ($dayOfWeek == 7) { // Only count Sundays as weekends
                 $weekends++;
-                $weekendDays[] = date('Y-m-d', $date); // Store weekend days
+                $weekendDays[] = date('Y-m-d', $date);
             }
         }
+
 
         // Fetch holidays
         $query = "
