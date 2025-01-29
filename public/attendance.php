@@ -28,8 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $holidayStmt->execute();
     $isHoliday = $holidayStmt->fetchColumn() > 0;
 
-    // Check if the date is a weekend
-    $isWeekend = (date('N', strtotime($date)) >= 6); // 6 = Saturday, 7 = Sunday
+    
+    
+    // $isWeekend = (date('N', strtotime($date)) >= 6); // 6 = Saturday, 7 = Sunday for saturday and sunday
+
+    // Check if the date is a weekend (only Sunday)
+    $isWeekend = (date('N', strtotime($date)) == 7); // 7 = Sunday
 
     if ($isHoliday || $isWeekend) {
         header('Location: attendance.php?error=Cannot mark attendance on a holiday or weekend!');
